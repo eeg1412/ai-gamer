@@ -1,0 +1,39 @@
+{
+  "name": "ai-gamer",
+  "version": "1.0.0",
+  "description": "AI游戏解说直播系统 - 使用Gemini AI进行游戏画面解说",
+  "type": "module",
+  "scripts": {
+    "dev:server": "nodemon server/index.js",
+    "dev:client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build:client": "cd client && npm run build",
+    "start": "node server/index.js"
+  },
+  "keywords": [
+    "ai",
+    "gaming",
+    "live-streaming",
+    "gemini",
+    "obs",
+    "tts"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^1.37.0",
+    "better-sqlite3": "^11.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "microsoft-cognitiveservices-speech-sdk": "^1.47.0",
+    "obs-websocket-js": "^5.0.7",
+    "socket.io": "^4.8.1",
+    "tmi.js": "^1.8.5",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9"
+  }
+}
