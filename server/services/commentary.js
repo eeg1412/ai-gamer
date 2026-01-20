@@ -251,6 +251,11 @@ export class CommentaryService {
         throw new Error('无法截取画面')
       }
 
+      // 广播截屏给管理端
+      this.io.emit('commentary:screenshot', {
+        screenshot: `data:image/jpeg;base64,${screenshot}`
+      })
+
       this.io.emit('commentary:processing', { status: 'analyzing' })
 
       // 2. 构建带记忆的提示词

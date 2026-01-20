@@ -54,6 +54,17 @@
             >
               Token统计
             </button>
+            <button
+              @click="currentTab = 'monitor'"
+              class="px-4 py-2 rounded-lg text-sm transition-colors"
+              :class="
+                currentTab === 'monitor'
+                  ? 'bg-gaming-purple text-white'
+                  : 'text-gray-400 hover:text-white'
+              "
+            >
+              实时监控
+            </button>
           </div>
 
           <!-- 连接状态 -->
@@ -183,6 +194,89 @@
             <span class="material-icons mr-2">refresh</span>
             刷新统计
           </button>
+        </div>
+      </div>
+
+      <!-- 实时监控 Tab -->
+      <div v-if="currentTab === 'monitor'" class="space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- 画面预览 -->
+          <div class="gradient-border rounded-xl p-6">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+              <span class="material-icons mr-2 text-gaming-cyan"
+                >photo_camera</span
+              >
+              解说瞬时截图 (480p)
+            </h2>
+            <div
+              class="bg-gray-900 rounded-lg overflow-hidden aspect-video flex items-center justify-center border border-gray-700/50 shadow-inner"
+            >
+              <img
+                v-if="lastScreenshot"
+                :src="lastScreenshot"
+                class="w-full h-full object-contain"
+                alt="Latest Capture"
+              />
+              <div v-else class="text-gray-500 flex flex-col items-center">
+                <span class="material-icons text-6xl mb-4"
+                  >image_not_supported</span
+                >
+                <p>等待解说触发截图...</p>
+              </div>
+            </div>
+            <div
+              v-if="state.lastCommentaryTime"
+              class="mt-4 text-sm text-gray-400 flex justify-between"
+            >
+              <span>截图时间: {{ formatTime(state.lastCommentaryTime) }}</span>
+              <span>分辨率: 854x480 (480p)</span>
+            </div>
+          </div>
+
+          <!-- 状态概览 -->
+          <div class="gradient-border rounded-xl p-6">
+            <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+              <span class="material-icons mr-2 text-gaming-purple">info</span>
+              当前解说状态
+            </h2>
+            <div class="space-y-4">
+              <div
+                class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg"
+              >
+                <span class="text-gray-400">运行状态</span>
+                <span
+                  :class="
+                    state.isRunning ? 'text-gaming-green' : 'text-red-400'
+                  "
+                >
+                  {{ state.isRunning ? '正在运行' : '已停止' }}
+                </span>
+              </div>
+              <div
+                class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg"
+              >
+                <span class="text-gray-400">解说模式</span>
+                <span class="text-white">{{
+                  state.mode === 'auto' ? '自动' : '手动'
+                }}</span>
+              </div>
+              <div
+                v-if="state.mode === 'auto'"
+                class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg"
+              >
+                <span class="text-gray-400">自动间隔</span>
+                <span class="text-white">{{ state.autoIntervalSeconds }}s</span>
+              </div>
+              <div
+                class="flex justify-between items-center p-3 bg-gray-800/50 rounded-lg"
+              >
+                <span class="text-gray-400">最新解说内容</span>
+                <span class="text-white text-right max-w-xs truncate">{{
+                  state.currentCommentary || '无'
+                }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -732,7 +826,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useSocket, useCommentary, useMemory } from '../composables/useSocket'
 import { useStorage } from '../composables/useStorage'
 
-const { state } = useSocket()
+const { state, lastScreenshot } = useSocket()
 const { updateSettings } = useCommentary()
 const {
   memories,
@@ -777,6 +871,12 @@ const newMemory = ref({
 
 // 要删除的记忆
 const memoryToDelete = ref(null)
+
+// 格式化时间
+const formatTime = timestamp => {
+  if (!timestamp) return ''
+  return new Date(timestamp).toLocaleTimeString('zh-CN')
+}
 
 // 加载Token统计
 const loadTokenStats = async () => {

@@ -26,6 +26,7 @@ const settings = ref({
 const processing = ref(false)
 const processingStatus = ref('')
 const lastAudio = ref(null)
+const lastScreenshot = ref(null)
 const lastCommentary = ref({ text: '', timestamp: null })
 const error = ref(null)
 
@@ -132,6 +133,11 @@ export function useSocket() {
       }
       state.value.currentCommentary = data.text
       state.value.lastCommentaryTime = data.timestamp
+    })
+
+    // 解说截图
+    socket.on('commentary:screenshot', data => {
+      lastScreenshot.value = data.screenshot
     })
 
     // 解说音频
@@ -252,6 +258,7 @@ export function useSocket() {
     processing: readonly(processing),
     processingStatus: readonly(processingStatus),
     lastAudio: readonly(lastAudio),
+    lastScreenshot: readonly(lastScreenshot),
     lastCommentary: readonly(lastCommentary),
     error: readonly(error),
 

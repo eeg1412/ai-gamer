@@ -242,6 +242,33 @@
           </div>
         </div>
 
+        <!-- 画面预览 -->
+        <div class="gradient-border rounded-xl p-4">
+          <h2 class="text-sm font-medium text-gray-400 mb-3 flex items-center">
+            <span class="material-icons mr-2 text-gaming-cyan"
+              >photo_camera</span
+            >
+            最新截图 (480p)
+          </h2>
+
+          <div
+            class="bg-gray-800/50 rounded-lg overflow-hidden aspect-video flex items-center justify-center border border-gray-700"
+          >
+            <img
+              v-if="lastScreenshot"
+              :src="lastScreenshot"
+              class="w-full h-full object-contain"
+              alt="OBS Screenshot"
+            />
+            <div v-else class="text-gray-500 flex flex-col items-center">
+              <span class="material-icons text-4xl mb-2"
+                >image_not_supported</span
+              >
+              <span class="text-sm">暂无截图</span>
+            </div>
+          </div>
+        </div>
+
         <!-- 当前解说预览 -->
         <div class="gradient-border rounded-xl p-4">
           <h2 class="text-sm font-medium text-gray-400 mb-3 flex items-center">
@@ -406,8 +433,14 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useSocket, useCommentary, useTwitch } from '../composables/useSocket'
 
-const { state, processing, processingStatus, lastCommentary, lastAudio } =
-  useSocket()
+const {
+  state,
+  processing,
+  processingStatus,
+  lastCommentary,
+  lastAudio,
+  lastScreenshot
+} = useSocket()
 const {
   connectOBS,
   disconnectOBS,

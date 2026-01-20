@@ -182,8 +182,8 @@ export class OBSService {
       const { imageData } = await this.obs.call('GetSourceScreenshot', {
         sourceName: currentProgramSceneName,
         imageFormat: 'jpg',
-        imageWidth: 1280,
-        imageHeight: 720,
+        imageWidth: 854,
+        imageHeight: 480,
         imageCompressionQuality: 80
       })
 

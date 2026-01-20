@@ -102,11 +102,6 @@
         <span>{{ state.obsConnected ? 'OBS已连接' : 'OBS未连接' }}</span>
       </div>
     </div>
-
-    <!-- 版本信息 -->
-    <div class="mt-8 text-gray-600 text-xs">
-      Powered by Google Gemini & Edge TTS
-    </div>
   </div>
 </template>
 
