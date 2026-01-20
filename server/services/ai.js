@@ -276,12 +276,23 @@ export class AIService {
     if (!this.db) return
 
     try {
-      // 从响应中获取token使用信息
-      const usageMetadata = response.usageMetadata || {}
+      // 兼容不同版本的 SDK 响应结构
+      const usageMetadata =
+        response.usageMetadata ||
+        (response.response && response.response.usageMetadata) ||
+        (response.metadata && response.metadata.usage) ||
+        {}
+
       const inputTokens =
-        usageMetadata.promptTokenCount || this.estimateTokens(outputText)
+        usageMetadata.promptTokenCount ||
+        usageMetadata.prompt_token_count ||
+        (type === 'commentary' ? 800 : this.estimateTokens(type)) // Gemini 1.5/2.0 vision typically ~768 tokens per image
+
       const outputTokens =
-        usageMetadata.candidatesTokenCount || this.estimateTokens(outputText)
+        usageMetadata.candidatesTokenCount ||
+        usageMetadata.candidates_token_count ||
+        usageMetadata.output_token_count ||
+        (outputText ? this.estimateTokens(outputText) : 50)
 
       this.db.recordTokenUsage(
         type,

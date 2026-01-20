@@ -90,6 +90,7 @@ cp .env.example .env
 核心环境变量：
 
 - `GEMINI_API_KEY`: 你的 Google AI 密钥。
+- `GEMINI_MODEL`: (可选) 指定使用的模型版本，默认为 `gemini-2.5-flash`。
 - `AZURE_SPEECH_KEY`: 你的 Azure 语音密钥。
 - `AZURE_SPEECH_REGION`: 你的 Azure 资源区域（如 `eastasia`）。
 

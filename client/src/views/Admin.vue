@@ -817,6 +817,32 @@
     </div>
 
     <!-- 音频播放器（隐藏） -->
+    <!-- 确认删除对话框（代码已略...） -->
+
+    <!-- Toast 提示 -->
+    <div
+      v-if="toast.show"
+      class="fixed bottom-8 right-8 z-[100] animate-fade-in-up"
+    >
+      <div
+        class="px-6 py-3 rounded-lg shadow-2xl flex items-center space-x-3"
+        :class="{
+          'bg-gaming-green text-white': toast.type === 'success',
+          'bg-red-500 text-white': toast.type === 'error',
+          'bg-gaming-cyan text-white': toast.type === 'info'
+        }"
+      >
+        <span class="material-icons">{{
+          toast.type === 'success'
+            ? 'check_circle'
+            : toast.type === 'error'
+              ? 'error'
+              : 'info'
+        }}</span>
+        <span class="font-medium">{{ toast.message }}</span>
+      </div>
+    </div>
+
     <audio ref="audioPlayer" @ended="previewLoading = false"></audio>
   </div>
 </template>
@@ -854,6 +880,22 @@ const deleteConfirmProfile = ref(null)
 const voices = ref([])
 const previewLoading = ref(false)
 const audioPlayer = ref(null)
+
+// 提示信息
+const toast = ref({
+  show: false,
+  message: '',
+  type: 'success' // 'success' | 'error' | 'info'
+})
+
+const showToast = (message, type = 'success') => {
+  toast.value.message = message
+  toast.value.type = type
+  toast.value.show = true
+  setTimeout(() => {
+    toast.value.show = false
+  }, 3000)
+}
 
 // Token统计
 const tokenStats = ref({
@@ -996,6 +1038,7 @@ const saveCurrentProfile = async () => {
   const saved = await saveProfile(editingProfile.value)
   currentProfile.value = saved
   editingProfile.value = JSON.parse(JSON.stringify(saved))
+  showToast('配置方案已成功保存到本地缓存')
 }
 
 // 应用设置到当前会话
@@ -1005,6 +1048,7 @@ const applySettings = () => {
     ...editingProfile.value.settings,
     obsSettings: editingProfile.value.obsSettings
   })
+  showToast('配置已应用到当前服务器会话', 'info')
 }
 
 // 确认删除

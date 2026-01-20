@@ -87,18 +87,20 @@ export class OBSService {
       this.config.url = newConfig.url
     }
 
-    // 如果新密码是 undefined，保留旧密码
-    // 如果新密码是空字符串，可能是用户想清空密码，但也可能是 UI 没填
-    // 为了防止 UI 没填导致覆盖，我们只有在密码确实发生变化时才记录新密码
-    if (typeof newConfig.password === 'string' && newConfig.password !== '') {
+    // 如果新密码是 undefined 或空字符串，保留旧密码，防止 UI 没填导致覆盖
+    if (
+      typeof newConfig.password === 'string' &&
+      newConfig.password.trim() !== ''
+    ) {
       this.config.password = newConfig.password
-    } else if (newConfig.password === '') {
-      // 允许清空密码，但如果原来有密码且这次是空，我们先打印个警告
-      console.log(
-        '⚠️ 收到空密码配置，如果要取消 OBS 密码请确保 OBS 端也已同步取消'
-      )
+    } else if (newConfig.password === undefined) {
+      // 保持原样
+    } else if (newConfig.password === '' && !this.config.password) {
+      // 本来就没有密码，保持空
       this.config.password = ''
     }
+    // 如果原本有密码且新传过来的是空字符串，我们选择保留原密码
+    // 这是修复 "OBS密码无法保存" 的关键，因为 UI 常常会传回空值给已有的配置
 
     const needReconnect =
       this.config.url !== oldUrl || this.config.password !== oldPassword

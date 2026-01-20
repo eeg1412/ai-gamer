@@ -171,9 +171,9 @@ export class DatabaseService {
     const stmt = this.db.prepare(`
       SELECT 
         COUNT(*) as count,
-        COALESCE(SUM(input_tokens), 0) as input_tokens,
-        COALESCE(SUM(output_tokens), 0) as output_tokens,
-        COALESCE(SUM(total_tokens), 0) as total_tokens
+        COALESCE(SUM(input_tokens), 0) as input,
+        COALESCE(SUM(output_tokens), 0) as output,
+        COALESCE(SUM(total_tokens), 0) as total
       FROM token_usage 
       WHERE date(created_at) = date('now', 'localtime')
     `)
@@ -187,9 +187,9 @@ export class DatabaseService {
     const stmt = this.db.prepare(`
       SELECT 
         COUNT(*) as count,
-        COALESCE(SUM(input_tokens), 0) as input_tokens,
-        COALESCE(SUM(output_tokens), 0) as output_tokens,
-        COALESCE(SUM(total_tokens), 0) as total_tokens
+        COALESCE(SUM(input_tokens), 0) as input,
+        COALESCE(SUM(output_tokens), 0) as output,
+        COALESCE(SUM(total_tokens), 0) as total
       FROM token_usage 
       WHERE created_at >= datetime('now', '-7 days', 'localtime')
     `)
@@ -203,9 +203,9 @@ export class DatabaseService {
     const stmt = this.db.prepare(`
       SELECT 
         COUNT(*) as count,
-        COALESCE(SUM(input_tokens), 0) as input_tokens,
-        COALESCE(SUM(output_tokens), 0) as output_tokens,
-        COALESCE(SUM(total_tokens), 0) as total_tokens
+        COALESCE(SUM(input_tokens), 0) as input,
+        COALESCE(SUM(output_tokens), 0) as output,
+        COALESCE(SUM(total_tokens), 0) as total
       FROM token_usage 
       WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now', 'localtime')
     `)

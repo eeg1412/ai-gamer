@@ -17,7 +17,7 @@ export default {
   // Google Gemini AI配置
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
-    model: 'gemini-2.5-flash'
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
   },
 
   // TTS配置
