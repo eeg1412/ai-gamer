@@ -21,8 +21,17 @@ export class OBSService {
     }
 
     try {
+      const url = this.config.url || 'ws://127.0.0.1:4455'
+      const password = this.config.password
+
+      console.log(
+        `📡 正在尝试连接到 OBS: ${url} (密码: ${password ? '***' : '未提供'})`
+      )
+
       const { obsWebSocketVersion, negotiatedRpcVersion } =
-        await this.obs.connect(this.config.url, this.config.password)
+        await this.obs.connect(url, password, {
+          rpcVersion: 1
+        })
 
       this.connected = true
       console.log(
@@ -62,6 +71,45 @@ export class OBSService {
       this.connected = false
       console.log('已断开OBS连接')
     }
+  }
+
+  /**
+   * 更新配置
+   */
+  async updateConfig(newConfig) {
+    if (!newConfig) return { success: false, message: '配置不能为空' }
+
+    const oldUrl = this.config.url
+    const oldPassword = this.config.password
+
+    // 只有当有新值且不为 undefined 时才更新
+    if (typeof newConfig.url === 'string') {
+      this.config.url = newConfig.url
+    }
+
+    // 如果新密码是 undefined，保留旧密码
+    // 如果新密码是空字符串，可能是用户想清空密码，但也可能是 UI 没填
+    // 为了防止 UI 没填导致覆盖，我们只有在密码确实发生变化时才记录新密码
+    if (typeof newConfig.password === 'string' && newConfig.password !== '') {
+      this.config.password = newConfig.password
+    } else if (newConfig.password === '') {
+      // 允许清空密码，但如果原来有密码且这次是空，我们先打印个警告
+      console.log(
+        '⚠️ 收到空密码配置，如果要取消 OBS 密码请确保 OBS 端也已同步取消'
+      )
+      this.config.password = ''
+    }
+
+    const needReconnect =
+      this.config.url !== oldUrl || this.config.password !== oldPassword
+
+    if (needReconnect && this.connected) {
+      console.log('🔄 OBS配置已更改，正在重新连接...')
+      await this.disconnect()
+      return await this.connect()
+    }
+
+    return { success: true, message: '配置已更新' }
   }
 
   /**

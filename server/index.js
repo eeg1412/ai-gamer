@@ -37,9 +37,17 @@ app.use('/audio', express.static(path.join(__dirname, '../audio')))
 
 // 初始化服务
 const dbService = new DatabaseService()
-const obsService = new OBSService(config.obs)
+
+// 加载持久化的配置
+const defaultObsConfig = { url: 'ws://127.0.0.1:4455', password: '' }
+const savedObsConfig = dbService.getSetting('obs_config', defaultObsConfig)
+const obsService = new OBSService(savedObsConfig)
+
 const aiService = new AIService(config.gemini, dbService)
+
+// TTS 服务基础配置从 env 读，发音人等从数据库/管理端读
 const ttsService = new TTSService(config.tts)
+
 const memoryService = new MemoryService(
   aiService,
   dbService,
@@ -51,7 +59,8 @@ const commentaryService = new CommentaryService(
   aiService,
   ttsService,
   io,
-  memoryService
+  memoryService,
+  dbService
 )
 
 // 将服务挂载到app上，方便路由访问

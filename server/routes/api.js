@@ -64,9 +64,9 @@ router.get('/settings', (req, res) => {
   })
 })
 
-router.put('/settings', (req, res) => {
+router.put('/settings', async (req, res) => {
   const services = req.app.get('services')
-  const settings = services.commentary.updateSettings(req.body)
+  const settings = await services.commentary.updateSettings(req.body)
   res.json({ success: true, data: settings })
 })
 

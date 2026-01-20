@@ -81,18 +81,19 @@ cd ..
 
 ### 4. 配置环境变量
 
-复制 `.env.example` 为 `.env` 并填入配置：
+复制 `.env.example` 为 `.env` 并填入基础密钥：
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件：
+核心环境变量：
 
 - `GEMINI_API_KEY`: 你的 Google AI 密钥。
 - `AZURE_SPEECH_KEY`: 你的 Azure 语音密钥。
 - `AZURE_SPEECH_REGION`: 你的 Azure 资源区域（如 `eastasia`）。
-- `OBS_WS_PASSWORD`: OBS WebSocket 的连接密码。
+
+**注意：** OBS 地址、密码、TTS 发音人及语速等业务配置现在统一在**管理端界面**进行设置，无需在 `.env` 中修改。
 
 ### 5. 启动项目
 

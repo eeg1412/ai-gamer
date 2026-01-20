@@ -901,7 +901,10 @@ const saveCurrentProfile = async () => {
 // 应用设置到当前会话
 const applySettings = () => {
   if (!editingProfile.value) return
-  updateSettings(editingProfile.value.settings)
+  updateSettings({
+    ...editingProfile.value.settings,
+    obsSettings: editingProfile.value.obsSettings
+  })
 }
 
 // 确认删除

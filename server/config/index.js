@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') })
+dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 
 export default {
   // 服务器配置
@@ -20,18 +20,10 @@ export default {
     model: 'gemini-2.5-flash'
   },
 
-  // OBS WebSocket配置
-  obs: {
-    url: process.env.OBS_WS_URL || 'ws://127.0.0.1:4455',
-    password: process.env.OBS_WS_PASSWORD || ''
-  },
-
   // TTS配置
   tts: {
     azureKey: process.env.AZURE_SPEECH_KEY || '',
-    azureRegion: process.env.AZURE_SPEECH_REGION || 'eastasia',
-    voice: process.env.TTS_VOICE || 'zh-CN-XiaoxiaoNeural',
-    rate: process.env.TTS_RATE || '+0%'
+    azureRegion: process.env.AZURE_SPEECH_REGION || 'eastasia'
   },
 
   // Twitch配置

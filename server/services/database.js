@@ -90,6 +90,63 @@ export class DatabaseService {
       CREATE INDEX IF NOT EXISTS idx_memories_context_type ON memories(context_type);
       CREATE INDEX IF NOT EXISTS idx_session_history_session_id ON session_history(session_id);
     `)
+
+    // 系统设置表
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  }
+
+  // ==================== 设置相关 ====================
+
+  /**
+   * 保存设置
+   */
+  saveSetting(key, value) {
+    const stmt = this.db.prepare(`
+      INSERT OR REPLACE INTO settings (key, value, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+    `)
+    return stmt.run(
+      key,
+      typeof value === 'object' ? JSON.stringify(value) : String(value)
+    )
+  }
+
+  /**
+   * 获取设置
+   */
+  getSetting(key, defaultValue = null) {
+    const stmt = this.db.prepare('SELECT value FROM settings WHERE key = ?')
+    const result = stmt.get(key)
+    if (!result) return defaultValue
+
+    try {
+      return JSON.parse(result.value)
+    } catch {
+      return result.value
+    }
+  }
+
+  /**
+   * 获取所有设置
+   */
+  getAllSettings() {
+    const stmt = this.db.prepare('SELECT key, value FROM settings')
+    const rows = stmt.all()
+    const settings = {}
+    rows.forEach(row => {
+      try {
+        settings[row.key] = JSON.parse(row.value)
+      } catch {
+        settings[row.key] = row.value
+      }
+    })
+    return settings
   }
 
   // ==================== Token 统计相关 ====================

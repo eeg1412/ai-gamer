@@ -3,12 +3,20 @@
  * 负责协调OBS、AI、TTS服务，实现自动/手动解说功能
  */
 export class CommentaryService {
-  constructor(obsService, aiService, ttsService, io, memoryService = null) {
+  constructor(
+    obsService,
+    aiService,
+    ttsService,
+    io,
+    memoryService = null,
+    dbService = null
+  ) {
     this.obs = obsService
     this.ai = aiService
     this.tts = ttsService
     this.io = io
     this.memory = memoryService
+    this.db = dbService
 
     // 解说状态
     this.state = {
@@ -19,8 +27,8 @@ export class CommentaryService {
       lastCommentaryTime: null
     }
 
-    // 解说配置
-    this.settings = {
+    // 默认解说配置
+    const defaultSettings = {
       systemPrompt:
         '你是一位专业的游戏解说员，风格幽默风趣，善于分析游戏局势。解说要简洁有力，每次解说控制在50字以内。',
       userPrompt:
@@ -29,6 +37,24 @@ export class CommentaryService {
       ttsVoice: 'zh-CN-XiaoxiaoNeural',
       ttsRate: '+0%',
       maxTokens: 150
+    }
+
+    // 从数据库加载设置或使用默认值
+    this.settings = this.db
+      ? this.db.getSetting('commentary_settings', defaultSettings)
+      : defaultSettings
+
+    // 如果加载的设置中有自动解说间隔，更新到状态
+    if (this.settings.autoIntervalSeconds) {
+      this.state.autoIntervalSeconds = this.settings.autoIntervalSeconds
+    }
+
+    // 如果加载的设置中有TTS配置，更新TTS服务
+    if (this.settings.ttsVoice || this.settings.ttsRate) {
+      this.tts.updateConfig({
+        voice: this.settings.ttsVoice,
+        rate: this.settings.ttsRate
+      })
     }
 
     // 自动解说定时器
@@ -61,15 +87,48 @@ export class CommentaryService {
   /**
    * 更新解说设置
    */
-  updateSettings(newSettings) {
-    this.settings = { ...this.settings, ...newSettings }
+  async updateSettings(newSettings) {
+    // 分离OBS和其他设置
+    const { obsSettings, ...otherSettings } = newSettings
+
+    // 更新基础解说设置
+    this.settings = { ...this.settings, ...otherSettings }
+
+    // 如果有OBS设置，更新OBS服务
+    if (obsSettings) {
+      // 获取当前 OBS 配置，进行深度合并或属性合并，确保不会丢失未提供的字段
+      const currentObsConfig = this.obs.config || {}
+      const mergedObsConfig = { ...currentObsConfig, ...obsSettings }
+
+      await this.obs.updateConfig(mergedObsConfig)
+
+      // 如果有数据库，也保存完整的 OBS 配置
+      if (this.db) {
+        this.db.saveSetting('obs_config', mergedObsConfig)
+      }
+    }
+
+    // 如果AI配置改变（例如maxTokens）
+    if (otherSettings.maxTokens) {
+      this.ai.updateConfig({ maxTokens: otherSettings.maxTokens })
+    }
 
     // 如果TTS设置改变，更新TTS服务配置
-    if (newSettings.ttsVoice || newSettings.ttsRate) {
+    if (otherSettings.ttsVoice || otherSettings.ttsRate) {
       this.tts.updateConfig({
         voice: this.settings.ttsVoice,
         rate: this.settings.ttsRate
       })
+    }
+
+    // 如果自动解说间隔改变
+    if (otherSettings.autoIntervalSeconds) {
+      this.setAutoInterval(otherSettings.autoIntervalSeconds)
+    }
+
+    // 持久化到数据库
+    if (this.db) {
+      this.db.saveSetting('commentary_settings', this.settings)
     }
 
     // 广播设置更新

@@ -39,6 +39,22 @@ export class AIService {
   }
 
   /**
+   * 更新配置
+   */
+  updateConfig(newConfig) {
+    const needReinit =
+      newConfig.apiKey !== this.config.apiKey ||
+      newConfig.model !== this.config.model
+
+    this.config = { ...this.config, ...newConfig }
+
+    if (needReinit) {
+      console.log('🔄 AI配置已更改，正在重新初始化...')
+      this.init()
+    }
+  }
+
+  /**
    * 获取服务状态
    */
   getStatus() {

@@ -266,6 +266,12 @@ export class TTSService {
    */
   updateConfig(newConfig) {
     this.config = { ...this.config, ...newConfig }
+
+    if (this.speechConfig) {
+      if (newConfig.voice) {
+        this.speechConfig.speechSynthesisVoiceName = newConfig.voice
+      }
+    }
   }
 
   /**

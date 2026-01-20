@@ -80,8 +80,8 @@ export function initSocketHandlers(
     })
 
     // 更新设置
-    socket.on('settings:update', data => {
-      const settings = commentaryService.updateSettings(data)
+    socket.on('settings:update', async data => {
+      const settings = await commentaryService.updateSettings(data)
       io.emit('settings:updated', settings)
     })
 
