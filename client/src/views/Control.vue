@@ -310,7 +310,7 @@
             <span class="material-icons mr-2 text-gaming-cyan"
               >photo_camera</span
             >
-            最新截图 (480p)
+            最新截图
           </h2>
 
           <div

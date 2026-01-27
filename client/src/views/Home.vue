@@ -16,7 +16,7 @@
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full"
     >
       <!-- 管理端 -->
-      <router-link to="/admin" class="group">
+      <a href="/admin" target="_blank" rel="noopener noreferrer" class="group">
         <div
           class="gradient-border p-6 rounded-xl hover:glow-box transition-all duration-300 cursor-pointer"
         >
@@ -36,10 +36,15 @@
             <span class="material-icons ml-1">arrow_forward</span>
           </div>
         </div>
-      </router-link>
+      </a>
 
       <!-- 控制端 -->
-      <router-link to="/control" class="group">
+      <a
+        href="/control"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group"
+      >
         <div
           class="gradient-border p-6 rounded-xl hover:glow-box transition-all duration-300 cursor-pointer"
         >
@@ -59,10 +64,15 @@
             <span class="material-icons ml-1">arrow_forward</span>
           </div>
         </div>
-      </router-link>
+      </a>
 
       <!-- 展示端 -->
-      <router-link to="/display" class="group">
+      <a
+        href="/display"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group"
+      >
         <div
           class="gradient-border p-6 rounded-xl hover:glow-box transition-all duration-300 cursor-pointer"
         >
@@ -82,10 +92,15 @@
             <span class="material-icons ml-1">arrow_forward</span>
           </div>
         </div>
-      </router-link>
+      </a>
 
       <!-- 语音识别端 -->
-      <router-link to="/recognition" class="group">
+      <a
+        href="/recognition"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group"
+      >
         <div
           class="gradient-border p-6 rounded-xl hover:glow-box transition-all duration-300 cursor-pointer"
         >
@@ -105,7 +120,7 @@
             <span class="material-icons ml-1">arrow_forward</span>
           </div>
         </div>
-      </router-link>
+      </a>
     </div>
 
     <!-- 状态栏 -->

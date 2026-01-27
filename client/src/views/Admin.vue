@@ -31,7 +31,7 @@
           <!-- Tab切换（桌面） -->
           <div class="hidden md:flex items-center bg-gray-800 rounded-lg p-1">
             <button
-              @click="currentTab = 'config'"
+              @click="selectTab('config')"
               class="px-4 py-2 rounded-lg text-sm transition-colors"
               :class="
                 currentTab === 'config'
@@ -42,7 +42,7 @@
               配置方案
             </button>
             <button
-              @click="currentTab = 'memory'"
+              @click="selectTab('memory')"
               class="px-4 py-2 rounded-lg text-sm transition-colors"
               :class="
                 currentTab === 'memory'
@@ -53,7 +53,7 @@
               AI记忆
             </button>
             <button
-              @click="currentTab = 'stats'"
+              @click="selectTab('stats')"
               class="px-4 py-2 rounded-lg text-sm transition-colors"
               :class="
                 currentTab === 'stats'
@@ -64,7 +64,7 @@
               Token统计
             </button>
             <button
-              @click="currentTab = 'monitor'"
+              @click="selectTab('monitor')"
               class="px-4 py-2 rounded-lg text-sm transition-colors"
               :class="
                 currentTab === 'monitor'
@@ -288,7 +288,7 @@
               <span class="material-icons mr-2 text-gaming-cyan"
                 >photo_camera</span
               >
-              解说瞬时截图 (480p)
+              解说瞬时截图
             </h2>
             <div
               class="bg-gray-900 rounded-lg overflow-hidden aspect-video flex items-center justify-center border border-gray-700/50 shadow-inner"
@@ -997,6 +997,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useSocket, useCommentary, useMemory } from '../composables/useSocket'
 import { useStorage } from '../composables/useStorage'
 
@@ -1023,13 +1024,27 @@ const {
   createDefaultProfile
 } = useStorage()
 
-const currentTab = ref('config')
+const router = useRouter()
+const route = useRoute()
+
+const currentTab = ref(route.query.tab ? String(route.query.tab) : 'config')
 const showMobileMenu = ref(false)
-// 抽离模板中的多语句点击操作
+// 抽离模板中的多语句点击操作：同步到 route.query.tab
 const selectTab = tab => {
   currentTab.value = tab
   showMobileMenu.value = false
+  const newQuery = Object.assign({}, route.query, { tab })
+  router.replace({ query: newQuery }).catch(() => {})
 }
+
+// 当路由 query 更改时，同步回 currentTab（例如页面刷新或外部导航）
+watch(
+  () => route.query.tab,
+  t => {
+    if (t) currentTab.value = String(t)
+    else currentTab.value = 'config'
+  }
+)
 const editingProfile = ref(null)
 const deleteConfirmProfile = ref(null)
 const voices = ref([])
