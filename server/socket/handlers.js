@@ -216,6 +216,12 @@ export function initSocketHandlers(
       io.emit('memory:deleted', { id: data.id })
     })
 
+    // 更新记忆
+    socket.on('memory:update', data => {
+      const memory = memoryService.updateMemory(data.id, data)
+      io.emit('memory:updated', memory)
+    })
+
     // 从会话生成记忆
     socket.on('memory:generateFromSession', async data => {
       const result = await memoryService.generateMemoryFromSession(data)

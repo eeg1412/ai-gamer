@@ -403,11 +403,6 @@
                 <div class="flex items-start justify-between mb-2">
                   <div>
                     <h3 class="text-white font-medium">{{ memory.title }}</h3>
-                    <span
-                      v-if="memory.memory_type"
-                      class="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-400"
-                      >{{ memory.memory_type }}</span
-                    >
                   </div>
                   <div class="flex items-center space-x-2">
                     <button
@@ -420,6 +415,12 @@
                       "
                     >
                       {{ isMemoryActive(memory.id) ? '已激活' : '激活' }}
+                    </button>
+                    <button
+                      @click="editingMemory = { ...memory }"
+                      class="p-1 text-gray-400 hover:text-gaming-cyan"
+                    >
+                      <span class="material-icons text-sm">edit</span>
                     </button>
                     <button
                       @click="confirmDeleteMemory(memory)"
@@ -861,6 +862,54 @@
     </div>
 
     <audio ref="audioPlayer" @ended="previewLoading = false"></audio>
+
+    <!-- 编辑记忆对话框 -->
+    <div
+      v-if="editingMemory"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
+    >
+      <div class="glass rounded-xl p-6 max-w-lg w-full">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+          <span class="material-icons mr-2 text-gaming-cyan">edit</span>
+          编辑记忆
+        </h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">标题</label>
+            <input
+              v-model="editingMemory.title"
+              type="text"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-gaming-purple focus:outline-none"
+            />
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-1">内容</label>
+            <textarea
+              v-model="editingMemory.content"
+              rows="6"
+              class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-gaming-purple focus:outline-none resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-4 mt-6">
+          <button
+            @click="editingMemory = null"
+            class="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+          >
+            取消
+          </button>
+          <button
+            @click="handleUpdateMemory"
+            :disabled="!editingMemory.title || !editingMemory.content"
+            class="px-6 py-2 bg-gaming-purple text-white rounded-lg hover:bg-gaming-purple/80 transition-all disabled:opacity-50"
+          >
+            保存修改
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -878,7 +927,8 @@ const {
   setActiveMemories,
   clearActiveMemories: clearAllActive,
   createMemory,
-  deleteMemory: deleteMemoryById
+  deleteMemory: deleteMemoryById,
+  updateMemory
 } = useMemory()
 const {
   profiles,
@@ -929,6 +979,9 @@ const newMemory = ref({
 
 // 要删除的记忆
 const memoryToDelete = ref(null)
+
+// 正在编辑的记忆
+const editingMemory = ref(null)
 
 // 格式化时间
 const formatTime = timestamp => {
@@ -997,6 +1050,23 @@ const handleCreateMemory = () => {
       content: newMemory.value.content
     })
     newMemory.value = { title: '', content: '' }
+  }
+}
+
+// 更新记忆
+const handleUpdateMemory = () => {
+  if (
+    editingMemory.value &&
+    editingMemory.value.title &&
+    editingMemory.value.content
+  ) {
+    updateMemory({
+      id: editingMemory.value.id,
+      title: editingMemory.value.title,
+      content: editingMemory.value.content
+    })
+    editingMemory.value = null
+    showToast('记忆已成功更新')
   }
 }
 

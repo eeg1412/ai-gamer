@@ -217,6 +217,16 @@ export function useSocket() {
       memories.value = memories.value.filter(m => m.id !== data.id)
       activeMemories.value = activeMemories.value.filter(m => m.id !== data.id)
     })
+
+    socket.on('memory:updated', data => {
+      const index = memories.value.findIndex(m => m.id === data.id)
+      if (index !== -1) {
+        memories.value[index] = data
+      }
+      if (activeMemories.value[0]?.id === data.id) {
+        activeMemories.value = [data]
+      }
+    })
   }
 
   const disconnect = () => {
@@ -390,6 +400,10 @@ export function useMemory() {
     emit('memory:delete', { id })
   }
 
+  const updateMemory = data => {
+    emit('memory:update', data)
+  }
+
   const generateFromSession = data => {
     emit('memory:generateFromSession', data)
   }
@@ -406,6 +420,7 @@ export function useMemory() {
     clearActiveMemories,
     createMemory,
     deleteMemory,
+    updateMemory,
     generateFromSession,
     startNewSession
   }

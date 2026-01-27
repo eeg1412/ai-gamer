@@ -351,10 +351,18 @@ ${memoryContext}
    * 更新记忆
    */
   updateMemory(id, data) {
-    return this.db.updateMemory(id, {
+    const memory = this.db.updateMemory(id, {
       ...data,
       tokenCount: this.estimateTokens(data.content)
     })
+
+    // 如果该记忆是激活状态，同步更新内存中的对象
+    const activeIndex = this.activeMemories.findIndex(m => m.id === id)
+    if (activeIndex !== -1) {
+      this.activeMemories[activeIndex] = memory
+    }
+
+    return memory
   }
 
   /**
