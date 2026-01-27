@@ -294,7 +294,8 @@ export function useCommentary() {
   const setMode = mode => emit('mode:set', { mode })
   const start = () => emit('commentary:start')
   const stop = () => emit('commentary:stop')
-  const trigger = () => emit('commentary:trigger')
+  const trigger = directorPrompt =>
+    emit('commentary:trigger', { directorPrompt })
   const commentOnText = text => emit('commentary:text', { text })
   const speakText = text => emit('commentary:speak', { text })
   const setInterval = seconds => emit('interval:set', { seconds })

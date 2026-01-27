@@ -241,7 +241,7 @@ export class CommentaryService {
   /**
    * 执行一次解说（截图 -> AI分析 -> TTS）
    */
-  async performCommentary() {
+  async performCommentary(directorPrompt = null) {
     try {
       this.io.emit('commentary:processing', { status: 'capturing' })
 
@@ -264,11 +264,16 @@ export class CommentaryService {
         systemPrompt = this.memory.buildPromptWithMemory(systemPrompt)
       }
 
+      // 叠加导演提示词
+      const userPrompt = directorPrompt
+        ? `${this.settings.userPrompt}\n\n导演特别指示：${directorPrompt}`
+        : this.settings.userPrompt
+
       // 3. AI生成解说
       const commentary = await this.ai.generateCommentary(
         screenshot,
         systemPrompt,
-        this.settings.userPrompt,
+        userPrompt,
         { maxTokens: this.settings.maxTokens }
       )
 

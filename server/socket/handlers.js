@@ -62,8 +62,9 @@ export function initSocketHandlers(
     })
 
     // 手动触发解说（画面解说）
-    socket.on('commentary:trigger', async () => {
-      const result = await commentaryService.performCommentary()
+    socket.on('commentary:trigger', async data => {
+      const directorPrompt = data ? data.directorPrompt : null
+      const result = await commentaryService.performCommentary(directorPrompt)
       socket.emit('commentary:result', result)
     })
 

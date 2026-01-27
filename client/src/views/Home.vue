@@ -12,7 +12,9 @@
     </div>
 
     <!-- 导航卡片 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full">
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full"
+    >
       <!-- 管理端 -->
       <router-link to="/admin" class="group">
         <div
@@ -77,6 +79,29 @@
             class="mt-4 flex items-center text-gaming-green text-sm group-hover:translate-x-2 transition-transform"
           >
             <span>进入展示</span>
+            <span class="material-icons ml-1">arrow_forward</span>
+          </div>
+        </div>
+      </router-link>
+
+      <!-- 语音识别端 -->
+      <router-link to="/recognition" class="group">
+        <div
+          class="gradient-border p-6 rounded-xl hover:glow-box transition-all duration-300 cursor-pointer"
+        >
+          <div class="flex items-center mb-4">
+            <span class="material-icons text-3xl text-gaming-pink mr-3"
+              >mic</span
+            >
+            <h2 class="text-xl font-semibold text-white">语音识别</h2>
+          </div>
+          <p class="text-gray-400 text-sm">
+            基于浏览器API的导演语音识别，将你的指令实时转化为解说提示词。
+          </p>
+          <div
+            class="mt-4 flex items-center text-gaming-pink text-sm group-hover:translate-x-2 transition-transform"
+          >
+            <span>进入识别</span>
             <span class="material-icons ml-1">arrow_forward</span>
           </div>
         </div>

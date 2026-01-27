@@ -27,6 +27,12 @@ const routes = [
     name: 'Display',
     component: () => import('./views/Display.vue'),
     meta: { title: '解说展示' }
+  },
+  {
+    path: '/recognition',
+    name: 'Recognition',
+    component: () => import('./views/Recognition.vue'),
+    meta: { title: '语音识别' }
   }
 ]
 
