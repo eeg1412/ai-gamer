@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gaming-darker flex flex-col">
     <!-- 顶部状态栏 -->
     <nav class="glass border-b border-gaming-purple/20 px-4 py-3">
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between relative">
         <div class="flex items-center space-x-3">
           <router-link
             to="/"
@@ -19,59 +19,121 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <!-- Twitch连接状态 -->
           <button
-            @click="showTwitchPanel = !showTwitchPanel"
-            class="flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors"
-            :class="
-              twitchStatus.connected
-                ? 'bg-purple-500/20 text-purple-400'
-                : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
-            "
+            @click="showMobileMenu = !showMobileMenu"
+            class="md:hidden p-2 rounded bg-gray-800 text-gray-200"
+            aria-label="Toggle menu"
           >
-            <span class="material-icons text-sm mr-1">{{
-              twitchStatus.connected ? 'chat' : 'chat_bubble_outline'
-            }}</span>
-            {{
-              twitchStatus.connected
-                ? `Twitch: ${twitchStatus.channel}`
-                : 'Twitch'
-            }}
+            <span class="material-icons">menu</span>
           </button>
-
-          <!-- OBS连接状态 -->
-          <button
-            @click="toggleOBS"
-            class="flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors"
-            :class="
-              state.obsConnected
-                ? 'bg-gaming-green/20 text-gaming-green'
-                : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
-            "
-          >
-            <span class="material-icons text-sm mr-1">{{
-              state.obsConnected ? 'link' : 'link_off'
-            }}</span>
-            {{ state.obsConnected ? 'OBS已连接' : '连接OBS' }}
-          </button>
-
-          <!-- 运行状态 -->
-          <div
-            class="flex items-center px-3 py-1.5 rounded-lg text-sm"
-            :class="
-              state.isRunning
-                ? 'bg-gaming-green/20 text-gaming-green'
-                : 'bg-gray-700 text-gray-400'
-            "
-          >
-            <span
-              class="w-2 h-2 rounded-full mr-2"
+          <!-- 桌面状态组 -->
+          <div class="hidden md:flex items-center space-x-4">
+            <!-- Twitch连接状态 -->
+            <button
+              @click="showTwitchPanel = !showTwitchPanel"
+              class="flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors"
               :class="
-                state.isRunning ? 'bg-gaming-green pulse-dot' : 'bg-gray-500'
+                twitchStatus.connected
+                  ? 'bg-purple-500/20 text-purple-400'
+                  : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
               "
-            ></span>
-            {{ state.isRunning ? '运行中' : '已停止' }}
+            >
+              <span class="material-icons text-sm mr-1">{{
+                twitchStatus.connected ? 'chat' : 'chat_bubble_outline'
+              }}</span>
+              {{
+                twitchStatus.connected
+                  ? `Twitch: ${twitchStatus.channel}`
+                  : 'Twitch'
+              }}
+            </button>
+
+            <!-- OBS连接状态 -->
+            <button
+              @click="toggleOBS"
+              class="flex items-center px-3 py-1.5 rounded-lg text-sm transition-colors"
+              :class="
+                state.obsConnected
+                  ? 'bg-gaming-green/20 text-gaming-green'
+                  : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+              "
+            >
+              <span class="material-icons text-sm mr-1">{{
+                state.obsConnected ? 'link' : 'link_off'
+              }}</span>
+              {{ state.obsConnected ? 'OBS已连接' : '连接OBS' }}
+            </button>
+
+            <!-- 运行状态 -->
+            <div
+              class="flex items-center px-3 py-1.5 rounded-lg text-sm"
+              :class="
+                state.isRunning
+                  ? 'bg-gaming-green/20 text-gaming-green'
+                  : 'bg-gray-700 text-gray-400'
+              "
+            >
+              <span
+                class="w-2 h-2 rounded-full mr-2"
+                :class="
+                  state.isRunning ? 'bg-gaming-green pulse-dot' : 'bg-gray-500'
+                "
+              ></span>
+              {{ state.isRunning ? '运行中' : '已停止' }}
+            </div>
           </div>
+
+          <!-- 移动端抽屉：顶部滑出样式（teleport 到 body），带遮罩且支持点击外部关闭 -->
+          <teleport to="body">
+            <div v-if="showMobileMenu" class="fixed inset-0 z-[9999]">
+              <div
+                class="fixed top-0 left-0 right-0 z-[10001] bg-gray-800 p-4 shadow-2xl"
+                @click.stop
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-white font-semibold">菜单</div>
+                  <button
+                    @click="showMobileMenu = false"
+                    class="p-1 rounded bg-gray-700 text-white"
+                  >
+                    <span class="material-icons">close</span>
+                  </button>
+                </div>
+                <div class="space-y-2">
+                  <button
+                    @click="handleToggleTwitchFromMenu"
+                    class="w-full text-left px-3 py-2 rounded text-gray-300"
+                  >
+                    <span class="material-icons align-middle mr-2 text-sm"
+                      >chat</span
+                    >
+                    {{
+                      twitchStatus.connected
+                        ? `Twitch: ${twitchStatus.channel}`
+                        : 'Twitch'
+                    }}
+                  </button>
+                  <button
+                    @click="handleToggleOBSFromMenu"
+                    class="w-full text-left px-3 py-2 rounded text-gray-300"
+                  >
+                    <span class="material-icons align-middle mr-2 text-sm">{{
+                      state.obsConnected ? 'link' : 'link_off'
+                    }}</span>
+                    {{ state.obsConnected ? 'OBS已连接' : '连接OBS' }}
+                  </button>
+                  <div class="px-3 py-2 text-gray-300">
+                    {{ state.isRunning ? '运行中' : '已停止' }}
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="absolute inset-0 bg-black/20 z-[10000]"
+                @click="showMobileMenu = false"
+              ></div>
+            </div>
+          </teleport>
         </div>
       </div>
     </nav>
@@ -465,7 +527,19 @@ const inputText = ref('')
 const intervalSeconds = ref(10)
 const audioPlayer = ref(null)
 const showTwitchPanel = ref(false)
+const showMobileMenu = ref(false)
 const replying = ref(false)
+
+// 移动端菜单操作（避免在模板中写多语句）
+const handleToggleTwitchFromMenu = () => {
+  showTwitchPanel.value = !showTwitchPanel.value
+  showMobileMenu.value = false
+}
+
+const handleToggleOBSFromMenu = () => {
+  toggleOBS()
+  showMobileMenu.value = false
+}
 
 // Twitch连接表单
 const twitchForm = ref({

@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gaming-dark">
     <!-- 顶部导航 -->
     <nav class="glass border-b border-gaming-purple/20 px-6 py-4">
-      <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="max-w-7xl mx-auto flex items-center justify-between relative">
         <div class="flex items-center space-x-4">
           <router-link
             to="/"
@@ -19,8 +19,17 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <!-- Tab切换 -->
-          <div class="flex items-center bg-gray-800 rounded-lg p-1">
+          <!-- 手机汉堡（仅在小屏显示） -->
+          <button
+            @click="showMobileMenu = !showMobileMenu"
+            class="md:hidden p-2 rounded bg-gray-800 text-gray-200"
+            aria-label="Toggle menu"
+          >
+            <span class="material-icons">menu</span>
+          </button>
+
+          <!-- Tab切换（桌面） -->
+          <div class="hidden md:flex items-center bg-gray-800 rounded-lg p-1">
             <button
               @click="currentTab = 'config'"
               class="px-4 py-2 rounded-lg text-sm transition-colors"
@@ -67,8 +76,8 @@
             </button>
           </div>
 
-          <!-- 连接状态 -->
-          <div class="flex items-center space-x-2 text-sm">
+          <!-- 连接状态（桌面） -->
+          <div class="hidden sm:flex items-center space-x-2 text-sm">
             <span
               class="w-2 h-2 rounded-full"
               :class="
@@ -80,6 +89,79 @@
             >
           </div>
         </div>
+
+        <!-- 移动端抽屉（顶部滑出样式）：teleport 到 body，drawer 在 top-0，遮罩在其下 -->
+        <teleport to="body">
+          <div v-if="showMobileMenu" class="fixed inset-0 z-[9999]">
+            <!-- 抽屉：固定在顶部，覆盖页面宽度 -->
+            <div
+              class="fixed top-0 left-0 right-0 z-[10001] bg-gray-800 p-4 shadow-2xl"
+              @click.stop
+            >
+              <div class="flex items-center justify-between mb-2">
+                <div class="text-white font-semibold">菜单</div>
+                <button
+                  @click="showMobileMenu = false"
+                  class="p-1 rounded bg-gray-700 text-white"
+                >
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+              <div class="space-y-2">
+                <button
+                  @click="selectTab('config')"
+                  :class="
+                    currentTab === 'config'
+                      ? 'bg-gaming-purple text-white'
+                      : 'text-gray-300'
+                  "
+                  class="w-full text-left px-3 py-2 rounded"
+                >
+                  配置方案
+                </button>
+                <button
+                  @click="selectTab('memory')"
+                  :class="
+                    currentTab === 'memory'
+                      ? 'bg-gaming-purple text-white'
+                      : 'text-gray-300'
+                  "
+                  class="w-full text-left px-3 py-2 rounded"
+                >
+                  AI记忆
+                </button>
+                <button
+                  @click="selectTab('stats')"
+                  :class="
+                    currentTab === 'stats'
+                      ? 'bg-gaming-purple text-white'
+                      : 'text-gray-300'
+                  "
+                  class="w-full text-left px-3 py-2 rounded"
+                >
+                  Token统计
+                </button>
+                <button
+                  @click="selectTab('monitor')"
+                  :class="
+                    currentTab === 'monitor'
+                      ? 'bg-gaming-purple text-white'
+                      : 'text-gray-300'
+                  "
+                  class="w-full text-left px-3 py-2 rounded"
+                >
+                  实时监控
+                </button>
+              </div>
+            </div>
+
+            <!-- 遮罩：位于抽屉下方，点击关闭 -->
+            <div
+              class="absolute inset-0 bg-black/20 z-[10000]"
+              @click="showMobileMenu = false"
+            ></div>
+          </div>
+        </teleport>
       </div>
     </nav>
 
@@ -942,6 +1024,12 @@ const {
 } = useStorage()
 
 const currentTab = ref('config')
+const showMobileMenu = ref(false)
+// 抽离模板中的多语句点击操作
+const selectTab = tab => {
+  currentTab.value = tab
+  showMobileMenu.value = false
+}
 const editingProfile = ref(null)
 const deleteConfirmProfile = ref(null)
 const voices = ref([])

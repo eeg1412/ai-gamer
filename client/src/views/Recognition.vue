@@ -32,9 +32,12 @@
               class="w-2 h-2 rounded-full"
               :class="connected ? 'bg-gaming-green pulse-dot' : 'bg-red-500'"
             ></span>
-            <span class="text-gray-400">
+            <span class="text-gray-400 hidden sm:inline">
               服务 {{ connected ? '已连接' : '未连接' }}
             </span>
+            <span class="sm:hidden text-gray-300 text-sm">{{
+              connected ? '已' : '未'
+            }}</span>
           </div>
         </div>
       </div>
