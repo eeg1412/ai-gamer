@@ -1,5 +1,7 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center p-8">
+  <div
+    class="min-h-screen flex flex-col items-center justify-center p-8 bg-gaming-dark"
+  >
     <!-- Logo和标题 -->
     <div class="text-center mb-12">
       <div
