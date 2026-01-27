@@ -313,7 +313,7 @@ ${historyText}
     return `${baseSystemPrompt}
 
 ---
-以下是你的记忆，请在解说时参考这些信息保持连贯性：
+以下是你的记忆，需要回忆的时候才使用：
 
 ${memoryContext}
 ---`
