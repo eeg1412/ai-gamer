@@ -327,13 +327,13 @@
               </div>
             </div>
 
-            <button
+            <!-- <button
               v-if="activeMemories.length > 0"
               @click="clearAllActiveMemories"
               class="w-full mt-4 py-2 text-red-400 hover:bg-red-400/10 rounded-lg text-sm transition-colors"
             >
               清除所有激活记忆
-            </button>
+            </button> -->
           </div>
 
           <!-- 创建新记忆 -->
@@ -364,18 +364,7 @@
                   placeholder="记忆内容..."
                 ></textarea>
               </div>
-              <div>
-                <label class="block text-sm text-gray-400 mb-1">类型</label>
-                <select
-                  v-model="newMemory.memoryType"
-                  class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-gaming-purple focus:outline-none"
-                >
-                  <option value="manual">手动创建</option>
-                  <option value="game_context">游戏背景</option>
-                  <option value="style">解说风格</option>
-                  <option value="character">角色设定</option>
-                </select>
-              </div>
+              <!-- 类型已移除 -->
               <button
                 @click="handleCreateMemory"
                 :disabled="!newMemory.title || !newMemory.content"
@@ -817,6 +806,33 @@
       </div>
     </div>
 
+    <!-- 删除记忆确认对话框 -->
+    <div
+      v-if="memoryToDelete"
+      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    >
+      <div class="glass rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold text-white mb-4">确认删除记忆</h3>
+        <p class="text-gray-400 mb-6">
+          确定要删除记忆 "{{ memoryToDelete.title }}" 吗？此操作无法撤销。
+        </p>
+        <div class="flex justify-end space-x-4">
+          <button
+            @click="memoryToDelete = null"
+            class="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+          >
+            取消
+          </button>
+          <button
+            @click="confirmDeleteMemoryAction"
+            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+          >
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- 音频播放器（隐藏） -->
     <!-- 确认删除对话框（代码已略...） -->
 
@@ -908,8 +924,7 @@ const tokenStats = ref({
 // 新记忆表单
 const newMemory = ref({
   title: '',
-  content: '',
-  memoryType: 'manual'
+  content: ''
 })
 
 // 要删除的记忆
@@ -946,18 +961,27 @@ const isMemoryActive = id => {
 
 // 切换记忆激活状态
 const toggleMemoryActive = memory => {
-  const currentIds = activeMemories.value.map(m => m.id)
-  if (isMemoryActive(memory.id)) {
-    setActiveMemories(currentIds.filter(id => id !== memory.id))
-  } else {
-    setActiveMemories([...currentIds, memory.id])
+  const currentActive = activeMemories.value[0]
+  // 如果当前没有激活记忆 -> 激活当前记忆
+  if (!currentActive) {
+    setActiveMemories([memory.id])
+    return
   }
+
+  // 如果当前激活的是同一个 -> 取消激活
+  if (currentActive.id === memory.id) {
+    setActiveMemories([])
+    return
+  }
+
+  // 如果已有不同激活记忆 -> 替换为当前记忆
+  setActiveMemories([memory.id])
 }
 
 // 移除激活的记忆
 const removeActiveMemory = id => {
-  const currentIds = activeMemories.value.map(m => m.id)
-  setActiveMemories(currentIds.filter(memId => memId !== id))
+  // 直接清空激活（后端为单激活逻辑）
+  setActiveMemories([])
 }
 
 // 清除所有激活记忆
@@ -970,10 +994,9 @@ const handleCreateMemory = () => {
   if (newMemory.value.title && newMemory.value.content) {
     createMemory({
       title: newMemory.value.title,
-      content: newMemory.value.content,
-      memoryType: newMemory.value.memoryType
+      content: newMemory.value.content
     })
-    newMemory.value = { title: '', content: '', memoryType: 'manual' }
+    newMemory.value = { title: '', content: '' }
   }
 }
 

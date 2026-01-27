@@ -32,6 +32,16 @@ export class MemoryService {
 
     // 当前使用的记忆
     this.activeMemories = []
+    // 从数据库恢复已激活的记忆（如果有）
+    try {
+      const savedActiveId = this.db.getSetting('active_memory_id', null)
+      if (savedActiveId) {
+        const m = this.db.getMemoryById(savedActiveId)
+        if (m) this.activeMemories = [m]
+      }
+    } catch (e) {
+      console.error('恢复激活记忆失败:', e.message)
+    }
   }
 
   /**
@@ -110,6 +120,12 @@ export class MemoryService {
         })
 
         this.activeMemories = [memory]
+        // 持久化激活记忆ID
+        try {
+          this.db.saveSetting('active_memory_id', memory.id)
+        } catch (e) {
+          console.error('保存激活记忆ID失败:', e.message)
+        }
         if (this.io) this.io.emit('memory:activeUpdated', this.activeMemories)
         console.log('📝 已创建并激活新记忆:', memory.id)
         return memory
@@ -140,6 +156,12 @@ ${historyText}
         })
 
         this.activeMemories = [updatedMemory]
+        // 持久化激活记忆ID
+        try {
+          this.db.saveSetting('active_memory_id', updatedMemory.id)
+        } catch (e) {
+          console.error('保存激活记忆ID失败:', e.message)
+        }
         if (this.io) this.io.emit('memory:activeUpdated', this.activeMemories)
         console.log('📝 已更新激活记忆:', activeMemory.id)
         return updatedMemory
@@ -228,6 +250,11 @@ ${historyText}
 
     if (!memoryId) {
       this.activeMemories = []
+      try {
+        this.db.saveSetting('active_memory_id', null)
+      } catch (e) {
+        console.error('保存激活记忆ID失败:', e.message)
+      }
       return []
     }
 
@@ -237,6 +264,16 @@ ${historyText}
       this.activeMemories = [memory]
     } else {
       this.activeMemories = []
+    }
+
+    // 持久化激活记忆ID
+    try {
+      this.db.saveSetting(
+        'active_memory_id',
+        this.activeMemories[0]?.id || null
+      )
+    } catch (e) {
+      console.error('保存激活记忆ID失败:', e.message)
     }
 
     return this.activeMemories
@@ -254,6 +291,11 @@ ${historyText}
    */
   clearActiveMemories() {
     this.activeMemories = []
+    try {
+      this.db.saveSetting('active_memory_id', null)
+    } catch (e) {
+      console.error('保存激活记忆ID失败:', e.message)
+    }
   }
 
   /**
@@ -320,7 +362,16 @@ ${memoryContext}
    */
   deleteMemory(id) {
     // 如果在激活列表中，移除
+    const wasActive = this.activeMemories.some(m => m.id === id)
     this.activeMemories = this.activeMemories.filter(m => m.id !== id)
+    if (wasActive) {
+      try {
+        this.db.saveSetting('active_memory_id', null)
+      } catch (e) {
+        console.error('保存激活记忆ID失败:', e.message)
+      }
+      if (this.io) this.io.emit('memory:activeUpdated', this.activeMemories)
+    }
     return this.db.deleteMemory(id)
   }
 
