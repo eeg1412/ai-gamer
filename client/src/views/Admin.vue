@@ -762,7 +762,7 @@
                 class="flex items-center px-6 py-2 bg-gaming-cyan/20 text-gaming-cyan rounded-lg hover:bg-gaming-cyan/30 transition-colors"
               >
                 <span class="material-icons mr-2">flash_on</span>
-                应用到当前会话
+                保存并应用到当前会话
               </button>
               <button
                 @click="saveCurrentProfile"
@@ -1042,8 +1042,9 @@ const saveCurrentProfile = async () => {
 }
 
 // 应用设置到当前会话
-const applySettings = () => {
+const applySettings = async () => {
   if (!editingProfile.value) return
+  await saveCurrentProfile()
   updateSettings({
     ...editingProfile.value.settings,
     obsSettings: editingProfile.value.obsSettings

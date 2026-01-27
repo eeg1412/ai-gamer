@@ -97,11 +97,13 @@ export function useStorage() {
       const store = transaction.objectStore(STORE_NAME)
 
       const now = new Date().toISOString()
-      const data = {
-        ...profile,
-        updatedAt: now,
-        createdAt: profile.createdAt || now
-      }
+      const data = JSON.parse(
+        JSON.stringify({
+          ...profile,
+          updatedAt: now,
+          createdAt: profile.createdAt || now
+        })
+      )
 
       const request = profile.id ? store.put(data) : store.add(data)
 
