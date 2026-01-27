@@ -12,9 +12,10 @@ import { v4 as uuidv4 } from 'uuid'
  * 5. 自动清理过期或低使用率的记忆
  */
 export class MemoryService {
-  constructor(aiService, dbService, config = {}) {
+  constructor(aiService, dbService, io, config = {}) {
     this.ai = aiService
     this.db = dbService
+    this.io = io
     this.config = {
       maxMemoryLength: config.maxMemoryLength || 500, // 记忆最大字数
       autoSummarize: config.autoSummarize !== false, // 是否自动生成记忆
@@ -39,17 +40,18 @@ export class MemoryService {
   getMemorySummarizePrompt() {
     return `你是一个记忆管理助手。你的任务是将游戏解说的对话历史总结成简洁的"记忆"。
 
-记忆应该包含：
-1. 关键游戏事件（击杀、胜利、失败等）
-2. 当前游戏状态要点
-3. 有趣的观众互动
-4. 解说风格和氛围
+记忆应该包含（如果有）：
+- 关键游戏事件
+- 关键的游戏剧情点
+- 当前游戏状态要点
+- 有趣的观众互动
+- 解说风格和氛围
 
 要求：
 - 使用第三人称描述
 - 突出重要信息，忽略琐碎细节
 - 控制在${this.config.maxMemoryLength}字以内
-- 使用简洁的bullet point格式`
+- 使用简洁的bullet point格式`.trim()
   }
 
   /**
@@ -74,56 +76,92 @@ export class MemoryService {
       JSON.stringify(interaction)
     )
 
-    // 检查是否需要自动生成记忆
-    if (
-      this.config.autoSummarize &&
-      this.currentSession.interactions.length >= this.config.summarizeThreshold
-    ) {
-      this.autoGenerateMemory()
+    // 检查是否需要更新激活的记忆
+    if (this.config.autoSummarize) {
+      this.updateActiveMemory(interaction)
     }
 
     return interaction
   }
 
   /**
-   * 自动生成记忆
+   * 更新激活的记忆 (单记忆逻辑)
+   */
+  async updateActiveMemory(interaction) {
+    try {
+      let activeMemory =
+        this.activeMemories.length > 0 ? this.activeMemories[0] : null
+
+      if (!activeMemory) {
+        // 如果没有激活记忆，创建一个新的并激活
+        console.log('📝 没有激活记忆，正在创建初始记忆...')
+
+        const summary = await this.ai.generateTextCommentary(
+          `基于以下交互生成初始记忆摘要：\n\n[${interaction.type}] 输出: ${interaction.output}`,
+          this.getMemorySummarizePrompt(),
+          { maxTokens: 300 }
+        )
+
+        const memory = this.db.createMemory({
+          title: `自动记忆 - ${new Date().toLocaleString('zh-CN')}`,
+          content: summary,
+          contextType: 'auto_generated',
+          tokenCount: this.estimateTokens(summary)
+        })
+
+        this.activeMemories = [memory]
+        if (this.io) this.io.emit('memory:activeUpdated', this.activeMemories)
+        console.log('📝 已创建并激活新记忆:', memory.id)
+        return memory
+      } else {
+        // 如果已有激活记忆，则进行增量总结更新
+        console.log(`📝 正在更新激活记忆 (ID: ${activeMemory.id})...`)
+
+        const historyText = `[${interaction.type}] 输出: ${interaction.output.substring(0, 200)}`
+
+        const updatedSummary = await this.ai.generateTextCommentary(
+          `你是一个记忆管理助手。请根据新的事件更新当前的记忆内容。
+          
+当前记忆：
+${activeMemory.content}
+
+新事件：
+${historyText}
+
+要求：将新事件融合进记忆中，保持简练，不要超过${this.config.maxMemoryLength}字。`,
+          this.getMemorySummarizePrompt(),
+          { maxTokens: 300 }
+        )
+
+        const updatedMemory = this.db.updateMemory(activeMemory.id, {
+          ...activeMemory,
+          content: updatedSummary,
+          tokenCount: this.estimateTokens(updatedSummary)
+        })
+
+        this.activeMemories = [updatedMemory]
+        if (this.io) this.io.emit('memory:activeUpdated', this.activeMemories)
+        console.log('📝 已更新激活记忆:', activeMemory.id)
+        return updatedMemory
+      }
+    } catch (error) {
+      console.error('自动更新记忆失败:', error.message)
+      return null
+    }
+  }
+
+  /**
+   * 自动生成记忆 (保留方法，但逻辑更新为单记忆逻辑)
    */
   async autoGenerateMemory() {
     if (this.currentSession.interactions.length === 0) return null
-
-    try {
-      // 构建对话历史文本
-      const historyText = this.currentSession.interactions
-        .map(
-          i =>
-            `[${i.type}] ${i.input ? `输入: ${i.input.substring(0, 100)}... ` : ''}输出: ${i.output}`
-        )
-        .join('\n')
-
-      // 让AI总结
-      const summary = await this.ai.generateTextCommentary(
-        `请将以下游戏解说历史总结成记忆：\n\n${historyText}`,
-        this.getMemorySummarizePrompt(),
-        { maxTokens: 300 }
-      )
-
-      // 创建记忆
-      const memory = this.db.createMemory({
-        title: `自动记忆 - ${new Date().toLocaleString('zh-CN')}`,
-        content: summary,
-        contextType: 'auto_generated',
-        tokenCount: this.estimateTokens(summary)
-      })
-
-      // 清空当前交互记录（已生成记忆）
-      this.currentSession.interactions = []
-
-      console.log('📝 已自动生成记忆:', memory.id)
-      return memory
-    } catch (error) {
-      console.error('自动生成记忆失败:', error.message)
-      return null
-    }
+    // 这里其实可以重定向到 updateActiveMemory，或者保持原来的批量生成逻辑
+    // 根据用户需求“每次都更新”，这个方法可能不再作为主要入口
+    const lastInteraction =
+      this.currentSession.interactions[
+        this.currentSession.interactions.length - 1
+      ]
+    return this.updateActiveMemory(lastInteraction)
   }
 
   /**
@@ -182,18 +220,24 @@ export class MemoryService {
   }
 
   /**
-   * 设置当前使用的记忆
+   * 设置当前使用的记忆 (单记忆逻辑)
    */
   setActiveMemories(memoryIds) {
-    this.activeMemories = memoryIds
-      .map(id => {
-        const memory = this.db.getMemoryById(id)
-        if (memory) {
-          this.db.incrementMemoryUsage(id)
-        }
-        return memory
-      })
-      .filter(Boolean)
+    // 只取第一个 ID，实现单记忆激活
+    const memoryId = Array.isArray(memoryIds) ? memoryIds[0] : memoryIds
+
+    if (!memoryId) {
+      this.activeMemories = []
+      return []
+    }
+
+    const memory = this.db.getMemoryById(memoryId)
+    if (memory) {
+      this.db.incrementMemoryUsage(memoryId)
+      this.activeMemories = [memory]
+    } else {
+      this.activeMemories = []
+    }
 
     return this.activeMemories
   }

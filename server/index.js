@@ -51,6 +51,7 @@ const ttsService = new TTSService(config.tts)
 const memoryService = new MemoryService(
   aiService,
   dbService,
+  io,
   config.memory || {}
 )
 const twitchService = new TwitchService(config.twitch || {}, io)

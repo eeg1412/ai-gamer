@@ -415,6 +415,7 @@
                   <div>
                     <h3 class="text-white font-medium">{{ memory.title }}</h3>
                     <span
+                      v-if="memory.memory_type"
                       class="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-400"
                       >{{ memory.memory_type }}</span
                     >
